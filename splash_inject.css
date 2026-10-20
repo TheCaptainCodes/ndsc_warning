@@ -1,0 +1,209 @@
+/*
+ * ============================================================
+ *  NDSC SPLASH OVERLAY — inject via homepage_settings → font_google_url
+ *  Works with ANY existing page — no HTML changes needed.
+ *  Dismiss: click PROCEED → navigates to "/" (the real site homepage).
+ *  Reappears: every page load / refresh (session-less by design).
+ *  Auto-hides: after 15 s if user does nothing.
+ * ============================================================
+ */
+
+/* ── CSS variables ─────────────────────────────────────────── */
+:root {
+  --sp-bg:    #05080b;
+  --sp-panel: rgba(9, 18, 23, .97);
+  --sp-green: #5cff9d;
+  --sp-cyan:  #52e8ff;
+  --sp-muted: #9bb5ad;
+}
+
+/* ── Fade-in entrance ──────────────────────────────────────── */
+@keyframes sp-fadein {
+  from { opacity: 0; transform: scale(.97); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+/* ── Auto-dismiss after 15 s ──────────────────────────────── */
+@keyframes sp-out {
+  0%   { opacity: 1; visibility: visible; pointer-events: auto; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; visibility: hidden;  pointer-events: none; }
+}
+
+/* ── Blinking cursor ──────────────────────────────────────── */
+@keyframes sp-blink {
+  0%, 49% { opacity: 1; }
+  50%,100% { opacity: 0; }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LAYER 1 — Full-screen dark grid backdrop  (html::before)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+html::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 2147483644;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(0,255,128,.13), transparent 55%),
+    linear-gradient(rgba(12,255,128,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12,255,128,.04) 1px, transparent 1px),
+    var(--sp-bg);
+  background-size: auto, 28px 28px, 28px 28px, auto;
+  pointer-events: none;
+  animation: sp-out 1.5s ease-out 15s forwards;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LAYER 2 — Terminal card with all text  (html::after)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+html::after {
+  /* ── All message content packed into CSS content string ── */
+  content:
+    /* terminal bar */
+    "\25CF  SYSTEM NOTICE // NDSC\A"
+    /* spacer */
+    "\A"
+    /* eyebrow */
+    "A MESSAGE FOR THE TEAM\A"
+    /* heading */
+    "\A Assalamu Alaikum _\A"
+    /* body lines */
+    "\A The Notre Dame Science Club website has been hacked by\A"
+    "Md. Fatin Hasnat, Roll 12806055.\A"
+    "\A No harm is intended. This notice is meant to alert the team,\A"
+    "and I look forward to connecting and working together.\A"
+    "\A To reach me: find me at NDC or email\A"
+    "thefatinhasnat@gmail.com\A"
+    /* signature */
+    "\A \2014  Md. Fatin Hasnat\A"
+    "     12806055\A"
+    /* footer */
+    "\A \2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\2015\A"
+    "To access the website, please wait 15 seconds.\A"
+    "NOTICE DISPLAY  \25CF  READY";
+
+  /* ── Position & size ── */
+  position: fixed;
+  inset: 0;
+  z-index: 2147483645;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(24px, 5vw, 48px);
+
+  /* ── Card box ── */
+  width: min(760px, calc(100vw - 48px));
+  margin: auto;
+  max-height: calc(100vh - 120px);   /* leave room for PROCEED button */
+  overflow-y: auto;
+  border: 1px solid rgba(92,255,157,.45);
+  border-radius: 18px;
+  background: var(--sp-panel);
+  box-shadow:
+    0 0 28px rgba(0,255,128,.12),
+    inset 0 0 32px rgba(0,255,128,.025);
+  backdrop-filter: blur(10px);
+
+  /* ── Typography ── */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+               "Liberation Mono", monospace;
+  font-size: clamp(.84rem, 1.5vw, 1rem);
+  color: #d5e7df;
+  white-space: pre-wrap;
+  line-height: 1.75;
+  pointer-events: none;
+
+  /* ── Animations ── */
+  animation:
+    sp-fadein .45s ease-out forwards,
+    sp-out    1.5s ease-out 15s forwards;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LAYER 3 — PROCEED button  (body::before)
+   Navigates to "/" which IS the site, effectively dismissing
+   the splash for the current session.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+body::before {
+  content: "PROCEED  \2192";
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+
+  /* Button styling */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  min-height: 48px;
+  padding: 0 28px;
+  border: 1.5px solid var(--sp-green);
+  border-radius: 8px;
+  background: var(--sp-green);
+  color: #04110a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+               "Liberation Mono", monospace;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 0 20px rgba(92,255,157,.30);
+  pointer-events: auto;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+
+  animation: sp-out 1.5s ease-out 15s forwards;
+}
+
+body::before:hover {
+  background: #9dffc2;
+  box-shadow: 0 0 32px rgba(92,255,157,.45);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DISMISS — The body::before pseudo-element LOOKS like a button
+   but pseudo-elements cannot have href. The actual clickable
+   element is the real <a class="proceed"> that already exists
+   in the site's page, styled below if present. If absent, we
+   overlay a transparent fixed <a> via the link-target CSS trick.
+
+   Because this CSS is injected via <link rel="stylesheet">,
+   we also re-style the existing site's first link on the page
+   to act as a dismiss trigger (fallback):
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Style real .proceed links (present in original splash.html) */
+.proceed {
+  position: fixed !important;
+  bottom: 40px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 2147483647 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 180px !important;
+  min-height: 48px !important;
+  padding: 0 28px !important;
+  border: 1.5px solid var(--sp-green) !important;
+  border-radius: 8px !important;
+  background: var(--sp-green) !important;
+  color: #04110a !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+               "Liberation Mono", monospace !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .12em !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  box-shadow: 0 0 20px rgba(92,255,157,.30) !important;
+  pointer-events: auto !important;
+}
+.proceed:hover {
+  background: #9dffc2 !important;
+  box-shadow: 0 0 32px rgba(92,255,157,.45) !important;
+  transform: translateX(-50%) translateY(-2px) !important;
+}
